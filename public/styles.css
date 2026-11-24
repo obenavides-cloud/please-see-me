@@ -1,0 +1,26 @@
+:root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #090b10; color: #f5f7fa; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: radial-gradient(circle at top right, #182139, #090b10 45%); }
+main { max-width: 1180px; margin: auto; padding: 32px 20px 60px; }
+header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+.eyebrow { color:#93a4c7; letter-spacing:.18em; font-size:11px; margin:0 0 6px; }
+h1 { margin:0; font-size:38px; } h2 { margin-top:0; font-size:18px; }
+.status { border:1px solid #27324a; border-radius:999px; padding:8px 12px; color:#aebad2; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.panel { background:#11151e; border:1px solid #252d3d; border-radius:14px; padding:18px; }
+.span-2 { grid-column:span 2; }
+dl div { display:flex; justify-content:space-between; border-bottom:1px solid #202737; padding:8px 0; }
+dt { color:#93a4c7; } dd { margin:0; }
+.actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
+button, .file { border:1px solid #39445a; border-radius:8px; background:#1a2030; color:#fff; padding:10px 14px; cursor:pointer; }
+button:disabled { opacity:.45; cursor:not-allowed; }
+button.primary { background:#e9edf7; color:#11151e; border-color:#e9edf7; }
+button.danger { border-color:#7b3d45; color:#ffc5ca; }
+.approval { display:block; margin-top:14px; color:#bec7da; font-size:13px; }
+.scene-list { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.scene { background:#0c1017; border:1px solid #252d3d; border-radius:8px; padding:10px; min-height:100px; }
+.scene strong { display:block; margin-bottom:6px; }
+.scene textarea { width:100%; min-height:72px; resize:vertical; background:#11151e; color:#fff; border:0; }
+table { width:100%; border-collapse:collapse; } th,td { text-align:left; padding:9px; border-bottom:1px solid #252d3d; }
+.file input { margin-left:8px; }
+@media (max-width:760px) { .grid { grid-template-columns:1fr; } .span-2 { grid-column:auto; } .scene-list { grid-template-columns:1fr 1fr; } }

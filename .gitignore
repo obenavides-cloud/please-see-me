@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+data/results/*
+data/jobs.json
+data/costs.json
+data/runpod-session.json
+data/auto-stop.log
+!data/results/.gitkeep

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Please See Me Studio</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">CINEMATIC AI PRODUCTION</p>
+          <h1>Please See Me Studio</h1>
+        </div>
+        <span id="health" class="status">Conectando...</span>
+      </header>
+
+      <section class="grid">
+        <article class="panel">
+          <h2>RunPod</h2>
+          <dl>
+            <div><dt>API</dt><dd id="runpodApi">--</dd></div>
+            <div><dt>Pod</dt><dd id="podState">--</dd></div>
+            <div><dt>Presupuesto</dt><dd>US$9.98 máximo</dd></div>
+          </dl>
+          <label class="approval"><input id="approveStart" type="checkbox" /> Confirmo aprobación explícita para iniciar GPU</label>
+          <div class="actions">
+            <button id="startPod" class="primary" disabled>Iniciar Pod</button>
+            <button id="stopPod" class="danger">Apagar Pod</button>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>ComfyUI</h2>
+          <dl>
+            <div><dt>Estado</dt><dd id="comfyState">--</dd></div>
+            <div><dt>GPU objetivo</dt><dd>24 GB VRAM</dd></div>
+            <div><dt>Modelo objetivo</dt><dd>Wan 2.2 / 2.1 compatible</dd></div>
+          </dl>
+          <button id="checkComfy">Comprobar conexión</button>
+        </article>
+
+        <article class="panel span-2">
+          <h2>Prueba piloto · 20 segundos</h2>
+          <p>Cuatro clips reales de 5 segundos. Cada workflow debe usar generación I2V/T2V animada; nunca fotogramas estáticos.</p>
+          <div class="scene-list" id="sceneList"></div>
+          <div class="actions">
+            <label class="file">Workflow JSON <input id="workflowFile" type="file" accept=".json,application/json" /></label>
+            <button id="queueScenes" class="primary">Enviar 4 escenas</button>
+            <button id="mergePilot">Unir y validar piloto</button>
+          </div>
+        </article>
+
+        <article class="panel span-2">
+          <h2>Cola y resultados</h2>
+          <table>
+            <thead><tr><th>Escena</th><th>Estado</th><th>Validación</th><th>Acción</th></tr></thead>
+            <tbody id="jobs"></tbody>
+          </table>
+        </article>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>
