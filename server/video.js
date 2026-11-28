@@ -7,7 +7,7 @@ const execFileAsync = promisify(execFile);
 export async function probeVideo(file) {
   const { stdout } = await execFileAsync("ffprobe", [
     "-v", "error",
-    "-show_entries", "format=duration:stream=codec_type,width,height,r_frame_rate",
+    "-show_entries", "format=duration:stream=codec_type,codec_name,width,height,r_frame_rate",
     "-of", "json",
     file
   ]);
@@ -37,4 +37,10 @@ export async function concatVideos(inputs, output) {
     "-pix_fmt", "yuv420p", "-r", "24", "-s", "1920x1080", output
   ]);
   await unlink(listFile).catch(() => {});
+}
+
+// Normalize actual generated footage without changing its aspect ratio.
+export async function normalizeVideo(input, output) {
+  await execFileAsync("ffmpeg", ["-y", "-v", "error", "-i", input, "-map", "0:v:0", "-an", "-vf", "scale=1920:1080:force_original_aspect_ratio=decrease:force_divisible_by=2,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=24", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart", output]);
+  return validateVideo(output);
 }
