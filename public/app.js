@@ -88,21 +88,24 @@ document.querySelector("#checkComfy").addEventListener("click", async () => {
 
 document.querySelector("#queueScenes").addEventListener("click", async () => {
   const file = document.querySelector("#workflowFile").files[0];
-  if (!file) return alert("Seleccione el workflow JSON exportado desde ComfyUI.");
   let workflow;
-  try { workflow = JSON.parse(await file.text()); } catch { return alert("El archivo no contiene JSON válido."); }
+  try { if(file) workflow = JSON.parse(await file.text()); } catch { return alert("El archivo no contiene JSON válido."); }
   const state = document.querySelector("#productionState");
   const button = document.querySelector("#queueScenes");
   button.disabled = true;
   try {
+    const reference = document.querySelector("#referenceFile").files[0];
+    if (!workflow) {
+      if (!reference) throw new Error("Selecciona la referencia del personaje para Wan 2.2.");
+      workflow = await api("/api/comfy/wan-workflow",{method:"POST",body:JSON.stringify({image:"reference-placeholder.png",prompt:"Cinematic animated scene"})});
+    }
     const nodes = await api("/api/comfy/nodes");
     const missing = [...new Set(Object.values(workflow).map(n => n.class_type))].filter(n => !nodes[n]);
     if (missing.length) throw new Error("Nodos no instalados: " + missing.join(", "));
     const candidates = Object.entries(workflow).filter(([,n]) => typeof n?.inputs?.text === "string");
     const positive = candidates.filter(([,n]) => /positive|positivo/i.test(n._meta?.title || ""));
-    const nodeId = positive.length === 1 ? positive[0][0] : window.prompt("ID del prompt positivo: " + candidates.map(([id,n]) => id + ": " + (n._meta?.title || n.class_type)).join(", "));
+    const nodeId = !file ? "4" : positive.length === 1 ? positive[0][0] : window.prompt("ID del prompt positivo: " + candidates.map(([id,n]) => id + ": " + (n._meta?.title || n.class_type)).join(", "));
     if (!candidates.some(([id]) => id === nodeId)) throw new Error("Selecciona un nodo de prompt positivo válido.");
-    const reference = document.querySelector("#referenceFile").files[0];
     if (reference) {
       if (reference.size > 3500000) throw new Error("Referencia superior a 3.5 MB");
       const loaders = Object.entries(workflow).filter(([,n]) => n.class_type === "LoadImage");
