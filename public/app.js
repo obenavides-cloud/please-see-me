@@ -91,12 +91,16 @@ document.querySelector("#queueScenes").addEventListener("click", async () => {
   if (!file) return alert("Seleccione el workflow JSON exportado desde ComfyUI.");
   let workflow;
   try { workflow = JSON.parse(await file.text()); } catch { return alert("El archivo no contiene JSON válido."); }
+  const candidates = Object.entries(workflow).filter(([,node]) => typeof node?.inputs?.text === "string");
+  if (!candidates.length) return alert("Exporta un workflow API con un nodo de texto positivo.");
+  const nodeId = window.prompt("ID del nodo de prompt positivo: " + candidates.map(([id,n]) => `${id}: ${n._meta?.title || n.class_type}`).join(", "));
+  if (!candidates.some(([id]) => id === nodeId)) return;
   for (const textarea of document.querySelectorAll("[data-scene]")) {
     const index = Number(textarea.dataset.scene);
     try {
       await api("/api/jobs", {
         method:"POST",
-        body: JSON.stringify({ name:`Escena ${index + 1}`, prompt:textarea.value, workflow })
+        body: JSON.stringify({ name:`Escena ${index + 1}`, prompt:textarea.value, workflow: { ...workflow, [nodeId]: { ...workflow[nodeId], inputs: { ...workflow[nodeId].inputs, text: textarea.value } } } })
       });
     } catch (error) { alert(error.message); break; }
   }
@@ -105,9 +109,11 @@ document.querySelector("#queueScenes").addEventListener("click", async () => {
 
 document.querySelector("#mergePilot").addEventListener("click", async () => {
   const jobs = await api("/api/jobs");
-  const four = jobs.filter((job) => /^Escena [1-4]$/.test(job.name)).slice(0, 4).map((job) => job.id);
+  const four = [1,2,3,4].map(n => jobs.find(job => job.name === `Escena ${n}` && job.status === "completed")?.id).filter(Boolean);
+  if (four.length !== 4) return alert("Completa las cuatro escenas antes de unirlas.");
   try {
     const result = await api("/api/production/merge", { method:"POST", body:JSON.stringify({ jobIds:four }) });
+    const link = document.createElement("a"); link.href = result.output; link.download = ""; link.click();
     alert(`Piloto válido: ${result.validation.duration.toFixed(2)} s · 1920×1080`);
   } catch (error) { alert(error.message); }
 });
