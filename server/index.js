@@ -122,7 +122,7 @@ app.post("/api/comfy/reference", async (req,res) => {
 app.get("/api/jobs", (_req, res) => res.json(getJobs()));
 
 app.post("/api/jobs", async (req, res) => {
-  const { name, prompt, workflow } = req.body || {};
+  const { name, prompt, workflow, batchId } = req.body || {};
   if (!name || !prompt || typeof workflow !== "object") {
     return res.status(400).json({ error: "name, prompt, and workflow are required" });
   }
@@ -131,6 +131,7 @@ app.post("/api/jobs", async (req, res) => {
     const job = {
       id: crypto.randomUUID(),
       promptId: result.prompt_id,
+      batchId: typeof batchId === "string" ? batchId : null,
       name,
       prompt,
       status: "queued",
@@ -188,7 +189,7 @@ app.post("/api/production/merge", async (req, res) => {
   const ids = Array.isArray(req.body?.jobIds) ? req.body.jobIds : [];
   const jobs = getJobs();
   const selected = ids.map((id) => jobs.find((job) => job.id === id)).filter(Boolean);
-  if (selected.length !== 4) return res.status(400).json({ error: "Exactly four completed scene clips are required" });
+  if (new Set(ids).size !== 4 || selected.length !== 4 || !selected[0]?.batchId || selected.some((job,i) => job.batchId !== selected[0].batchId || job.name !== `Escena ${i+1}`)) return res.status(400).json({ error: "Exactly four completed scene clips are required" });
   const files = [];
   try {
     for (const job of selected) {
