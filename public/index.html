@@ -22,7 +22,7 @@
           <dl>
             <div><dt>API</dt><dd id="runpodApi">--</dd></div>
             <div><dt>Pod</dt><dd id="podState">--</dd></div>
-            <div><dt>Presupuesto</dt><dd>US$9.98 máximo</dd></div>
+            <div><dt>Presupuesto</dt><dd>US$6 máximo</dd></div>
           </dl>
           <label class="approval"><input id="approveStart" type="checkbox" /> Confirmo aprobación explícita para iniciar GPU</label>
           <div class="actions">
@@ -45,6 +45,8 @@
           <h2>Prueba piloto · 20 segundos</h2>
           <p>Cuatro clips reales de 5 segundos. Cada workflow debe usar generación I2V/T2V animada; nunca fotogramas estáticos.</p>
           <div class="scene-list" id="sceneList"></div>
+          <label class="file">Referencia visual del personaje (PNG/JPEG/WebP, hasta 3.5 MB) <input id="referenceFile" type="file" accept="image/png,image/jpeg,image/webp" /></label>
+          <p id="productionState" role="status">Preparado para configurar el render.</p>
           <div class="actions">
             <label class="file">Workflow JSON <input id="workflowFile" type="file" accept=".json,application/json" /></label>
             <button id="queueScenes" class="primary">Enviar 4 escenas</button>
