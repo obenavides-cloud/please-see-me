@@ -45,3 +45,18 @@ export async function fetchComfyFile(filename, subfolder = "", type = "output") 
   if (!response.ok) throw new Error(`ComfyUI output HTTP ${response.status}`);
   return Buffer.from(await response.arrayBuffer());
 }
+
+export async function uploadReference(buffer, filename, mime) {
+  const form = new FormData();
+  form.append("image", new Blob([buffer], {type:mime}), filename);
+  form.append("type", "input");
+  form.append("overwrite", "false");
+  const response = await fetch(comfyUrl("upload/image"), {method:"POST",headers:comfyHeaders(),body:form,signal:AbortSignal.timeout(60000)});
+  if (!response.ok) throw new Error("Reference upload HTTP " + response.status);
+  return response.json();
+}
+export async function getNodeInfo() {
+  const response = await fetch(comfyUrl("object_info"), {headers:comfyHeaders(),signal:AbortSignal.timeout(30000)});
+  if (!response.ok) throw new Error("Node inventory HTTP " + response.status);
+  return response.json();
+}
