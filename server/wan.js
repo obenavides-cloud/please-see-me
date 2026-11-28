@@ -24,3 +24,19 @@ export function selectWanModels(nodes) {
   if(Object.values(models).some(v=>!v)) throw new Error("Wan 2.2 TI2V 5B, UMT5 XXL or Wan 2.2 VAE missing from ComfyUI");
   return models;
 }
+
+export function validateGraphInputs(graph,nodes) {
+ for(const [id,node] of Object.entries(graph)) {
+  const spec=nodes[node.class_type];
+  if(!spec) throw new Error("Missing node "+node.class_type);
+  const required=spec.input?.required||{};
+  const allowed={...required,...spec.input?.optional};
+  for(const key of Object.keys(required)) if(!(key in node.inputs)) throw new Error("Node "+id+" requires "+key);
+  for(const [key,value] of Object.entries(node.inputs)) {
+   if(!(key in allowed)) throw new Error("Node "+id+" does not accept "+key);
+   const options=allowed[key][0];
+   if(Array.isArray(options)&&!Array.isArray(value)&&!options.includes(value)&&node.class_type!=="LoadImage") throw new Error("Unsupported "+key+" on "+node.class_type+": "+value);
+  }
+ }
+ return graph;
+}
