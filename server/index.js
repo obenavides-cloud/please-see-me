@@ -4,7 +4,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { publicConfig } from "./config.js";
 import { getPods, resumePod, stopPod } from "./runpod.js";
-import { getComfyStatus, submitPrompt, getHistory, fetchComfyFile } from "./comfy.js";
+import { getComfyStatus, submitPrompt, getHistory, fetchComfyFile, uploadReference, getNodeInfo } from "./comfy.js";
 import { getJobs, saveJobs, getCosts, addCost, getRunpodSession, saveRunpodSession } from "./store.js";
 import { concatVideos, validateVideo, normalizeVideo } from "./video.js";
 import { getBudget, getSessionCost, getStopAt } from "./budget.js";
@@ -106,6 +106,17 @@ app.get("/api/comfy/status", async (_req, res) => {
   } catch (error) {
     res.status(502).json({ error: error.message });
   }
+});
+
+app.get("/api/comfy/nodes", async (_req,res) => {
+  try { res.json(await getNodeInfo()); } catch(e) { res.status(502).json({error:e.message}); }
+});
+app.post("/api/comfy/reference", async (req,res) => {
+  const {image,mime} = req.body || {};
+  if (typeof image !== "string" || !["image/png","image/jpeg","image/webp"].includes(mime)) return res.status(400).json({error:"PNG, JPEG or WebP required"});
+  const buffer = Buffer.from(image,"base64");
+  if (!buffer.length || buffer.length > 3500000) return res.status(400).json({error:"Reference must be under 3.5 MB"});
+  try { const result = await uploadReference(buffer, `reference-${crypto.randomUUID()}.${mime.split("/")[1]}`, mime); res.json(result); } catch(e) {res.status(502).json({error:e.message});}
 });
 
 app.get("/api/jobs", (_req, res) => res.json(getJobs()));
