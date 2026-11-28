@@ -1,4 +1,5 @@
 import express from "express";
+import { buildWanWorkflow, selectWanModels } from "./wan.js";
 import helmet from "helmet";
 import path from "node:path";
 import fs from "node:fs";
@@ -108,6 +109,9 @@ app.get("/api/comfy/status", async (_req, res) => {
   }
 });
 
+app.post("/api/comfy/wan-workflow", async (req,res) => {
+  try { const nodes = await getNodeInfo(); const workflow = buildWanWorkflow({...selectWanModels(nodes),image:req.body?.image,prompt:req.body?.prompt}); const missing = Object.values(workflow).filter(n=>!nodes[n.class_type]); if(missing.length) throw new Error("Missing nodes: "+missing.map(n=>n.class_type).join(", ")); res.json(workflow); } catch(e) {res.status(422).json({error:e.message});}
+});
 app.get("/api/comfy/nodes", async (_req,res) => {
   try { res.json(await getNodeInfo()); } catch(e) { res.status(502).json({error:e.message}); }
 });
