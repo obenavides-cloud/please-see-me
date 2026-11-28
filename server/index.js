@@ -6,7 +6,7 @@ import { publicConfig } from "./config.js";
 import { getPods, resumePod, stopPod } from "./runpod.js";
 import { getComfyStatus, submitPrompt, getHistory, fetchComfyFile } from "./comfy.js";
 import { getJobs, saveJobs, getCosts, addCost, getRunpodSession, saveRunpodSession } from "./store.js";
-import { concatVideos, validateVideo } from "./video.js";
+import { concatVideos, validateVideo, normalizeVideo } from "./video.js";
 import { getBudget, getSessionCost, getStopAt } from "./budget.js";
 
 const app = express();
@@ -144,23 +144,24 @@ app.post("/api/jobs/:id/poll", async (req, res) => {
     const entry = history[job.promptId];
     if (!entry) return res.json(job);
     const outputs = entry.outputs || {};
-    const outputFiles = Object.values(outputs).flatMap((node) => node.images || node.videos || node.gifs || []);
+    const outputFiles = Object.values(outputs).flatMap((node) => [...(node.images || []), ...(node.videos || []), ...(node.gifs || [])]);
     const videos = outputFiles.filter((file) => /\.(mp4|mov|webm)$/i.test(file.filename));
     if (videos.length) {
       const video = videos[0];
       const data = await fetchComfyFile(video.filename, video.subfolder || "", video.type || "output");
-      const fileName = `${job.id}-${video.filename}`;
+      const fileName = `${job.id}.mp4`;
       const filePath = path.resolve("data/results", fileName);
-      fs.writeFileSync(filePath, data);
-      const validation = await validateVideo(filePath);
+      const rawPath = path.resolve("data/results", `${job.id}-native${path.extname(video.filename)}`);
+      fs.writeFileSync(rawPath, data);
+      const validation = await normalizeVideo(rawPath, filePath);
       job.status = "completed";
       job.output = `/api/results/${encodeURIComponent(fileName)}`;
       job.validation = validation;
       job.completedAt = new Date().toISOString();
       saveJobs(jobs);
     } else {
-      job.status = entry.status?.status_str === "error" ? "failed" : "running";
-      job.error = entry.status?.messages?.[0]?.[1]?.message;
+      job.status = entry.status?.status_str === "error" || entry.status?.completed ? "failed" : "running";
+      job.error = entry.status?.messages?.find(m => m[0] === "execution_error")?.[1]?.exception_message || (job.status === "failed" ? "No video output returned by workflow" : undefined);
       saveJobs(jobs);
     }
     res.json(job);
